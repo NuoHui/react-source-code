@@ -9,6 +9,7 @@ import {REACT_FORWARD_REF_TYPE} from 'shared/ReactSymbols';
 
 import warningWithoutStack from 'shared/warningWithoutStack';
 
+// 接受一个渲染函数作为参数，render function有两个参数Props、ref
 export default function forwardRef<Props, ElementType: React$ElementType>(
   render: (props: Props, ref: React$Ref<ElementType>) => React$Node,
 ) {
@@ -39,6 +40,8 @@ export default function forwardRef<Props, ElementType: React$ElementType>(
     }
   }
 
+  // 返回值就是一个React节点
+  // 即就是React.createElement中的type
   return {
     $$typeof: REACT_FORWARD_REF_TYPE,
     render,
