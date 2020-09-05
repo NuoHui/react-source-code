@@ -11,8 +11,10 @@ import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
 
 import ReactCurrentOwner from './ReactCurrentOwner';
 
+// alias
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
+// React预留的props
 const RESERVED_PROPS = {
   key: true,
   ref: true,
@@ -26,6 +28,7 @@ function hasValidRef(config) {
   if (__DEV__) {
     if (hasOwnProperty.call(config, 'ref')) {
       const getter = Object.getOwnPropertyDescriptor(config, 'ref').get;
+      // 区分React自身注入的getter
       if (getter && getter.isReactWarning) {
         return false;
       }
@@ -38,6 +41,7 @@ function hasValidKey(config) {
   if (__DEV__) {
     if (hasOwnProperty.call(config, 'key')) {
       const getter = Object.getOwnPropertyDescriptor(config, 'key').get;
+      // 区分React自身注入的getter
       if (getter && getter.isReactWarning) {
         return false;
       }
@@ -109,6 +113,8 @@ function defineRefPropWarningGetter(props, displayName) {
  * @internal
  */
 const ReactElement = function(type, key, ref, self, source, owner, props) {
+
+  // 返回的是一个对象
   const element = {
     // This tag allows us to uniquely identify this as a React Element
     $$typeof: REACT_ELEMENT_TYPE,
@@ -167,13 +173,23 @@ const ReactElement = function(type, key, ref, self, source, owner, props) {
 /**
  * Create and return a new ReactElement of the given type.
  * See https://reactjs.org/docs/react-api.html#createelement
+ * type: 节点类型
+ * 如果是原生的节点类型，那么就是一个字符串 tagName
+ * 如果是一个组件(我们自己定义的、或者React内置提供的)那么就是一个变量
+ *
+ * config: 就是我们写在jsx上的attrs，它们都会转为key: value格式存到config对象上
+ *
+ * children: 所有后代元素
  */
 export function createElement(type, config, children) {
   let propName;
 
   // Reserved names are extracted
+  // 对于组件内部来说传入的attrs就是props
   const props = {};
 
+  // 预定义key ref等变量用于后面存值
+  // key ref属于特殊的attrs需要剔除
   let key = null;
   let ref = null;
   let self = null;
@@ -181,17 +197,20 @@ export function createElement(type, config, children) {
 
   if (config != null) {
     if (hasValidRef(config)) {
+      // 存储合法的ref
       ref = config.ref;
     }
     if (hasValidKey(config)) {
+      // 存储合法的key => string
       key = '' + config.key;
     }
 
     self = config.__self === undefined ? null : config.__self;
     source = config.__source === undefined ? null : config.__source;
-    // Remaining properties are added to a new props object
+    // 其他属性枚举到props对象
     for (propName in config) {
       if (
+        // 仅限config自身的属性 && 排除React预留的props
         hasOwnProperty.call(config, propName) &&
         !RESERVED_PROPS.hasOwnProperty(propName)
       ) {
@@ -202,10 +221,14 @@ export function createElement(type, config, children) {
 
   // Children can be more than one argument, and those are transferred onto
   // the newly allocated props object.
+  // 获取children的个数，一个节点下的children是可以有多个的
   const childrenLength = arguments.length - 2;
+
+  // 赋值处理props.children
   if (childrenLength === 1) {
     props.children = children;
   } else if (childrenLength > 1) {
+    // 定长数组、再遍历拷贝
     const childArray = Array(childrenLength);
     for (let i = 0; i < childrenLength; i++) {
       childArray[i] = arguments[i + 2];
@@ -219,16 +242,27 @@ export function createElement(type, config, children) {
   }
 
   // Resolve default props
+  // 处理defaultProps，另外需要处理defaultProps的顺序
+  /**
+   * class CustomButton extends React.component{}
+   * CustomButton.defaultProps = {}
+   * 可见type是一个组件
+   */
   if (type && type.defaultProps) {
     const defaultProps = type.defaultProps;
     for (propName in defaultProps) {
+      // 如果 props.color 被设置为 null，则它将保持为 null
+      // 关于这里为什么是undefined、而不是null，其实很好理解，定义了一个遍历而不初始化那它就是undefined，而null需要手动初始化。
       if (props[propName] === undefined) {
         props[propName] = defaultProps[propName];
       }
     }
   }
+
   if (__DEV__) {
     if (key || ref) {
+      // 处理displayName，即推导过程
+      // 如果是组件、先从组件的displayName取、其次是组件的名字、最后是默认值
       const displayName =
         typeof type === 'function'
           ? type.displayName || type.name || 'Unknown'
@@ -241,6 +275,8 @@ export function createElement(type, config, children) {
       }
     }
   }
+
+  // 返回一个真正的ReactElement
   return ReactElement(
     type,
     key,
