@@ -1,0 +1,32 @@
+{
+  "name": "react-source-code",
+  "version": "0.0.1",
+  "description": "React.js source code",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NuoHui/react-source-code.git"
+  },
+  "keywords": [
+    "React.js",
+    "source",
+    "code"
+  ],
+  "author": "NuoHui",
+  "license": "MIT",
+  "devDependencies": {
+    "@commitlint/cli": "^7.6.1",
+    "@commitlint/config-conventional": "^7.6.0",
+    "husky": "^2.3.0"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/NuoHui/react-source-code/issues"
+  },
+  "homepage": "https://github.com/NuoHui/react-source-code#readme"
+}
