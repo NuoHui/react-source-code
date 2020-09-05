@@ -25,6 +25,7 @@ function Component(props, context, updater) {
   this.refs = emptyObject;
   // We initialize the default updater but the real one gets injected by the
   // renderer.
+  // updater: 不同的平台有不同的处理
   this.updater = updater || ReactNoopUpdateQueue;
 }
 
@@ -51,7 +52,7 @@ Component.prototype.isReactComponent = {};
  *
  * @param {object|function} partialState Next partial state or function to
  *        produce next partial state to be merged with current state.
- * @param {?function} callback Called after state is updated.
+ * @param {?function} callback 当state更新完之后执行callback
  * @final
  * @protected
  */
@@ -79,6 +80,8 @@ Component.prototype.setState = function(partialState, callback) {
  * @param {?function} callback Called after update is complete.
  * @final
  * @protected
+ * 调用 forceUpdate() 将致使组件调用 render() 方法，此操作会跳过该组件的 shouldComponentUpdate()。
+ * 但其子组件会触发正常的生命周期方法，包括 shouldComponentUpdate() 方法。如果标记发生变化，React 仍将只更新 DOM。尽量避免使用。
  */
 Component.prototype.forceUpdate = function(callback) {
   this.updater.enqueueForceUpdate(this, callback, 'forceUpdate');
@@ -122,6 +125,7 @@ if (__DEV__) {
   }
 }
 
+// 保留Component原型引用
 function ComponentDummy() {}
 ComponentDummy.prototype = Component.prototype;
 
@@ -136,10 +140,13 @@ function PureComponent(props, context, updater) {
   this.updater = updater || ReactNoopUpdateQueue;
 }
 
+// 实现PureComponent继承Component
 const pureComponentPrototype = (PureComponent.prototype = new ComponentDummy());
 pureComponentPrototype.constructor = PureComponent;
 // Avoid an extra prototype jump for these methods.
 Object.assign(pureComponentPrototype, Component.prototype);
+
+// 标示区分：pureComponent与Component
 pureComponentPrototype.isPureReactComponent = true;
 
 export {Component, PureComponent};

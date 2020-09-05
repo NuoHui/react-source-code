@@ -46,7 +46,11 @@ const React = {
   },
 
   createRef,
+
+  // React提供的两个组件基类
   Component,
+  // React.PureComponent 与 React.Component 很相似。
+  // 两者的区别在于 React.Component 并未实现 shouldComponentUpdate()，而 React.PureComponent 中以浅层对比 prop 和 state 的方式来实现了该函数。
   PureComponent,
 
   createContext,
