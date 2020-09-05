@@ -32,6 +32,7 @@ export function createContext<T>(
     }
   }
 
+  // Context对象
   const context: ReactContext<T> = {
     $$typeof: REACT_CONTEXT_TYPE,
     _calculateChangedBits: calculateChangedBits,
@@ -40,6 +41,8 @@ export function createContext<T>(
     // there to be two concurrent renderers at most: React Native (primary) and
     // Fabric (secondary); React DOM (primary) and React ART (secondary).
     // Secondary renderers store their context values on separate fields.
+
+    // _currentValue、_currentValue2 用来记录context.Provider上最新的value
     _currentValue: defaultValue,
     _currentValue2: defaultValue,
     // These are circular
@@ -47,6 +50,10 @@ export function createContext<T>(
     Consumer: (null: any),
   };
 
+  // 1. 每个 Context 对象都会返回一个 Provider React 组件，它允许消费组件订阅 context 的变化
+  // 2. Provider 接收一个 value 属性，传递给消费组件。一个 Provider 可以和多个消费组件有对应关系。多个 Provider 也可以嵌套使用，里层的会覆盖外层的数据。
+  // 3. 当 Provider 的 value 值发生变化时，它内部的所有消费组件都会重新渲染。
+  // Provider 及其内部 consumer 组件都不受制于 shouldComponentUpdate 函数，因此当 consumer 组件在其祖先组件退出更新的情况下也能更新。
   context.Provider = {
     $$typeof: REACT_PROVIDER_TYPE,
     _context: context,
@@ -115,6 +122,7 @@ export function createContext<T>(
     // $FlowFixMe: Flow complains about missing properties because it doesn't understand defineProperty
     context.Consumer = Consumer;
   } else {
+    // Consumer指向的就是context，当渲染Consumer时候取的value就是_currentValue
     context.Consumer = context;
   }
 
